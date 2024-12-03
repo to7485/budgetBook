@@ -1,1 +1,5 @@
 # budgetBook
+- React
+- Springboot
+- mySql
+
