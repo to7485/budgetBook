@@ -15,5 +15,9 @@ npm start
 - React 18
 - JavaScript
 
+## 배포
+- EC2
+- RDS
+
 ## 사용 라이브러리
 - react-router-dom
