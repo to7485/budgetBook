@@ -231,6 +231,214 @@ http://hens-lab.shop:10001
 ### 6. HTTPS(433번 포트)로 전환
 - 443번 포트는 대부분의 통신사에서 차단하지 않는다는걸 검색을 통해 알았습니다.
 #### SSL 인증서 발급받기
-- 
+- Win-acme를 다운로드 받고 프롬프트에서 wacs.exe를 실행합니다.
+```bash
+N: Create certificate (default settings) #기본 설정을 사용하여 인증서 생성
+M: Create certificate (full options) #인증서 생성을 위한 옵션 수동 설정
+R: Run renewals (0 currently due) # 인증서 갱신
+A: Manage renewals (0 total) # 관리중인 인증서를 보고, 갱신 주기 등 설정
+O: More options...
+Q: Quit
 
+# Nginx와 같은 다른 웹 서버를 사용하는 이유 2번을 선택한다.
+1: Read bindings from IIS # IIS서버에 구성된 도메인을 읽어와 인증서 발급
+2: Manual input # 인증서에 포함될 도메인 이름을 수동으로 입력
+3: CSR created by another program
+C: Abort
+
+#Win-acme에서 인증서를 발급받을 도메인과 인증서의 사용자 지정이름을 확인하는 단계
+Description: A host name to get a certificate for. This may be a comma-separated list.
+Host: hens-lab.shop
+
+Source generated using plugin Manual: hens-lab.shop
+#엔터를 누르면 기본값으로 들어가게 된다.
+Friendly name '[Manual] hens-lab.shop'. <Enter> to accept or type desired name:
+
+#하나의 인증서에 여러 도메인을 포함할지, 각 도메인에 대해 개별 인증서를 생성할지 결정
+1: Separate certificate for each domain (e.g. *.example.com)
+2: Separate certificate for each host (e.g. sub.example.com)
+3: Separate certificate for each IIS site
+#도메인을 하나 쓸 것이기 때문에 4번 선택
+4: Single certificate
+C: Abort
+
+# 도메인 소유권을 증명하기 위해 어떤 인증 방식을 사용할 것인지 선택
+1: [http] Save verification files on (network) path
+2: [http] Serve verification files from memory
+3: [http] Upload verification files via FTP(S)
+4: [http] Upload verification files via SSH-FTP
+5: [http] Upload verification files via WebDav
+# 가비아에 도메인을 구입해놨기 때문에  TXT 레코드를 설정하기 위해 6번 선택
+6: [dns] Create verification records manually (auto-renew not possible)
+7: [dns] Create verification records with acme-dns (https://github.com/joohoi/acme-dns)
+8: [dns] Create verification records with your own script
+9: [tls-alpn] Answer TLS verification request from win-acme
+C: Abort
+
+How would you like prove ownership for the domain(s)?:
+
+# 인증서에 사용할 키 타입을 선택
+# 일반적으로 RSA가 안전한 기본값으로 권장된다.
+1: Elliptic Curve key
+2: RSA key
+C: Abort
+
+What kind of private key should be used for the certificate?:
+
+
+# 인증서를 어디에 저장할 지 설정
+1: IIS Central Certificate Store (.pfx per host)
+# Nginx는 PEM파일 형식으로 저장하는 것이 적합하다.
+2: PEM encoded files (Apache, nginx, etc.)
+3: PFX archive
+4: Windows Certificate Store (Local Computer)
+5: No (additional) store steps
+
+How would you like to store the certificate?:
+
+#PEM파일을 저장할 파일경로 선택하기
+#Nginx가 있는 폴더에 ssl폴더를 만들고 저장
+Description:         .pem files are exported to this folder.
+
+File path:
+
+# 개인키 파일에 암호를 설정할지 결정하는 과정
+# Nginx와 같은 서버에서는 개인 키에 암호를 설정하지 않는 것이 일반적이다.
+Description:         Password to set for the private key .pem file.
+
+1: None
+2: Type/paste in console
+3: Search in vault
+
+Choose from the menu:
+
+# 인증서를 추가로 다른 형식이나 위치에 저장할지 묻는 옵션
+# 이미 PEM 형식으로 인증서를 저장한 경우, 대부분의 경우 추가 저장은 필요하지 않다.
+1: IIS Central Certificate Store (.pfx per host)
+2: PEM encoded files (Apache, nginx, etc.)
+3: PFX archive
+4: Windows Certificate Store (Local Computer)
+5: No (additional) store steps
+
+Would you like to store it in another way too?:
+
+
+# 발급받은 인증서를 응용 프로그램에 적용하기 위해 추가 작업을 실행할지 결정하는 과정
+1: Create or update bindings in IIS
+2: Start external script or program
+# Nginx 환경에서 발급받은 인증서를 직접 설정파일에 추가해야 하기 때문에 선택
+3: No (additional) installation steps
+
+Which installation step should run first?:
+```
+#### Nginx의 nginx.conf에 환경설정하기
+```bash
+
+#user  nobody;
+worker_processes  1;
+
+#error_log  logs/error.log;
+#error_log  logs/error.log  notice;
+#error_log  logs/error.log  info;
+
+#pid        logs/nginx.pid;
+
+
+events {
+    worker_connections  1024;
+}
+
+
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+
+    #log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+    #                  '$status $body_bytes_sent "$http_referer" '
+    #                  '"$http_user_agent" "$http_x_forwarded_for"';
+
+    #access_log  logs/access.log  main;
+
+    sendfile        on;
+    #tcp_nopush     on;
+
+    #keepalive_timeout  0;
+    keepalive_timeout  65;
+
+    #gzip  on;
+
+    #     server {
+    #     listen       9090; # 필요시 포트를 8080으로 변경
+    #     server_name  localhost;
+
+    #     location / {
+    #         root   C:/Users/leehj/Desktop/develop/budgetBook/build;
+    #         index  index.html;
+    #         try_files $uri /index.html;
+    #     }
+
+    #     error_page   500 502 503 504  /50x.html;
+    #     location = /50x.html {
+    #         root   C:/Users/leehj/Desktop/develop/budgetBook/build;
+    #     }
+    # }
+
+    server {
+        listen 443 ssl;
+        server_name "도메인";
+        root "빌드파일경로";
+        
+        # SSL 인증서와 개인 키 경로 설정
+        ssl_certificate "경로";
+        ssl_certificate_key "경로";
+
+        # SSL 프로토콜 및 암호화 설정
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_ciphers HIGH:!aNULL:!MD5;
+
+        location / {
+            proxy_pass http://localhost:9090; # 백엔드 서버로 요청 전달
+            try_files $uri /index.html;       # SPA 라우팅 처리
+        }
+    }
+
+
+
+    # another virtual host using mix of IP-, name-, and port-based configuration
+    #
+    #server {
+    #    listen       8000;
+    #    listen       somename:8080;
+    #    server_name  somename  alias  another.alias;
+
+    #    location / {
+    #        root   html;
+    #        index  index.html index.htm;
+    #    }
+    #}
+
+
+    # HTTPS server
+    #
+    #server {
+    #    listen       443 ssl;
+    #    server_name  localhost;
+
+    #    ssl_certificate      cert.pem;
+    #    ssl_certificate_key  cert.key;
+
+    #    ssl_session_cache    shared:SSL:1m;
+    #    ssl_session_timeout  5m;
+
+    #    ssl_ciphers  HIGH:!aNULL:!MD5;
+    #    ssl_prefer_server_ciphers  on;
+
+    #    location / {
+    #        root   html;
+    #        index  index.html index.htm;
+    #    }
+    #}
+
+}
+```
 
