@@ -442,3 +442,129 @@ http {
 }
 ```
 
+## 2024.12.07
+### 1. 데이터베이스 설계
+- User 테이블
+```sql
+-- 유저 정보를 저장하는 테이블
+CREATE TABLE Users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY, -- 유저 고유 ID (자동 증가)
+    username VARCHAR(50) NOT NULL,         -- 유저 이름
+    email VARCHAR(100) NOT NULL UNIQUE,    -- 이메일 (고유 값, 중복 불가)
+    password VARCHAR(255) NOT NULL,        -- 비밀번호 (해싱 필요)
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP -- 계정 생성일
+);
+
+```
+- Series 테이블
+  - 프라모델 시리즈 정보를 관리하는 테이블
+```sql
+-- 프라모델 시리즈 정보를 저장하는 테이블
+CREATE TABLE Series (
+    series_id INT AUTO_INCREMENT PRIMARY KEY, -- 시리즈 고유 ID
+    series_name VARCHAR(100) NOT NULL,       -- 시리즈 이름
+    description TEXT                         -- 시리즈 설명 (선택 사항)
+);
+
+```
+
+- Scale 테이블
+  - 프라모델 스케일 정보를 관리하는 테이블
+```sql
+-- 프라모델 스케일 정보를 저장하는 테이블
+CREATE TABLE Scales (
+    scale_id INT AUTO_INCREMENT PRIMARY KEY, -- 스케일 고유 ID
+    scale_name VARCHAR(50) NOT NULL,        -- 스케일 이름 (예: HG, RG 등)
+    description TEXT                        -- 스케일 설명 (선택 사항)
+);
+
+```
+
+- Model 테이블
+  - 프라모델의 기본 정보를 관리하는 테이블
+```sql
+-- 프라모델 기본 정보를 저장하는 테이블
+CREATE TABLE Models (
+    model_id INT AUTO_INCREMENT PRIMARY KEY, -- 프라모델 고유 ID
+    user_id INT NOT NULL,                   -- 유저 ID (Users 테이블과 연결)
+    series_id INT NOT NULL,                 -- 시리즈 ID (Series 테이블과 연결)
+    scale_id INT NOT NULL,                  -- 스케일 ID (Scales 테이블과 연결)
+    name VARCHAR(100) NOT NULL,             -- 프라모델 이름
+    price DECIMAL(10,2) NOT NULL,           -- 프라모델 정가
+    purchase_date DATE,                     -- 최초 구매 날짜
+    store VARCHAR(100),                     -- 구매처
+    completion_status ENUM('완성', '미완성', '제작 중') DEFAULT '미완성', -- 제작 상태
+    description TEXT,                       -- 추가 설명 (선택 사항)
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP, -- 기록 생성일
+    FOREIGN KEY (user_id) REFERENCES Users(user_id), -- 유저 테이블과 외래 키 연결
+    FOREIGN KEY (series_id) REFERENCES Series(series_id), -- 시리즈 테이블과 외래 키 연결
+    FOREIGN KEY (scale_id) REFERENCES Scales(scale_id) -- 스케일 테이블과 외래 키 연결
+);
+
+```
+
+- Transactions 테이블
+  - 가계부 데이터를 관리하는 테이블.
+  - 모든 거래(구매, 도구 구매, 판매 등)를 포함
+```sql
+-- 가계부 데이터를 저장하는 테이블 (구매, 판매, 기타 거래 포함)
+CREATE TABLE Transactions (
+    transaction_id INT AUTO_INCREMENT PRIMARY KEY, -- 거래 고유 ID
+    user_id INT NOT NULL,                         -- 유저 ID (Users 테이블과 연결)
+    type ENUM('income', 'expense') NOT NULL,      -- 거래 유형 (수입/지출)
+    category VARCHAR(50) NOT NULL,               -- 거래 카테고리 (예: 구매, 도구 구매 등)
+    amount DECIMAL(10,2) NOT NULL,               -- 거래 금액
+    model_id INT,                                -- 프라모델 ID (Models 테이블과 연결, NULL 가능)
+    transaction_date DATE NOT NULL,              -- 거래 날짜
+    year INT GENERATED ALWAYS AS (YEAR(transaction_date)) STORED, -- 거래 연도 (자동 생성)
+    month INT GENERATED ALWAYS AS (MONTH(transaction_date)) STORED, -- 거래 월 (자동 생성)
+    notes TEXT,                                  -- 추가 설명 (선택 사항)
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP, -- 기록 생성일
+    FOREIGN KEY (user_id) REFERENCES Users(user_id), -- 유저 테이블과 외래 키 연결
+    FOREIGN KEY (model_id) REFERENCES Models(model_id) -- 프라모델 테이블과 외래 키 연결
+);
+
+```
+
+- Sales 테이블
+  - 프라모델 판매 정보를 관리하는 테이블
+```sql
+-- 프라모델 판매 정보를 저장하는 테이블
+CREATE TABLE Sales (
+    sale_id INT AUTO_INCREMENT PRIMARY KEY, -- 판매 고유 ID
+    model_id INT NOT NULL,                 -- 프라모델 ID (Models 테이블과 연결)
+    user_id INT NOT NULL,                  -- 유저 ID (Users 테이블과 연결)
+    sale_date DATE NOT NULL,               -- 판매 날짜
+    sale_amount DECIMAL(10,2) NOT NULL,    -- 판매 금액
+    notes TEXT,                            -- 추가 설명 (선택 사항)
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP, -- 기록 생성일
+    FOREIGN KEY (model_id) REFERENCES Models(model_id), -- 프라모델 테이블과 외래 키 연결
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) -- 유저 테이블과 외래 키 연결
+);
+
+```
+- Budget 테이블
+  - 예산 정보를 저장하는 테이블
+```sql
+CREATE TABLE Budget (
+    budget_id INT AUTO_INCREMENT PRIMARY KEY, -- 예산 고유 ID
+    user_id INT NOT NULL,                     -- 유저 ID (Users 테이블과 연결)
+    total_budget DECIMAL(10,2) NOT NULL,      -- 설정된 총 예산
+    month INT NOT NULL,                       -- 예산의 월
+    year INT NOT NULL,                        -- 예산의 연도
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP, -- 예산 생성일
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE -- 유저와 관계
+);
+```
+
+![img](budgetBook_erd.png)
+
+
+### 2. 화면 설계
+#### User 관련 화면
+- 로그인 화면
+- 회원가입 화면
+
+#### 가계부 관련 화면
+- 대시보드 화면
+- 월별 금액 화면
