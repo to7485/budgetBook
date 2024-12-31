@@ -16,8 +16,7 @@ npm start
 - JavaScript
 
 ## 배포
-- EC2
-- RDS
+- 개인PC(windows)
 
 ## 사용 라이브러리
 - react-router-dom
