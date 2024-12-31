@@ -12,8 +12,15 @@ npm start
 ```
 
 ## 기술스택
+### Front-end
 - React 18
 - JavaScript
+
+### Back-end
+- SpringBoot
+
+### DBMS
+- MySQL
 
 ## 배포
 - 개인PC(windows)
