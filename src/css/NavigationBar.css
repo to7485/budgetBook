@@ -2,8 +2,8 @@
     display:flex;
     flex-direction: row;
     list-style-type: none;
-    padding : 0;
-    margin: 0;
+    padding : 10;
+    margin: 10;
 }
 
 .navigation-list li{

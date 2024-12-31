@@ -1,33 +1,74 @@
-import React from 'react'
-import { useNavigate } from 'react-router-dom'
-import Button from '../components/Button'
-import Input from '../components/Input'
+import React,{useState} from 'react';
+import { useNavigate } from 'react-router-dom';
+import Button from '../components/Button';
+import Input from '../components/Input';
+import '../css/Login.css';
 
 const Login = () => {
-
     const navigate = useNavigate();
 
+    const[user, setUser] = useState({
+        id:'',
+        password:'',
+    })
+
+    const [error, setError] = useState('')
+
     const handleLogin = () => {
-       //onLogin(); //로그인 상태 업데이트
-        navigate('/board'); //대시보드로 이동
+        if(!user.id || !user.password){
+            setError('아이디와 비밀번호를 입력해주세요')
+            return;
+        }
+        navigate('/board/dash');
+    };
+
+    const handleSignup = () => {
+        navigate('/auth/signup')
     }
 
-    return(
-        <div>
-            <div className='login-form'>
-                <div>
-                    아이디 : <Input /><br/>
-                    비밀번호 : <Input />
+    const handleChange = (e) => {
+        const {id, value} = e.target;
+        setUser((prev) => ({
+            ...prev,
+            [id]:value,
+        }));
+        setError('');
+    }
+
+    return (
+        <div className="login-container">
+            <div className="login-box">
+                <h2>로그인</h2>
+                <div className="login-form">
+                    <label htmlFor="username">아이디</label>
+                    <Input 
+                        id="id" 
+                        placeholder="아이디를 입력하세요"
+                        value={user.id}
+                        onChange={handleChange} />
+                    
+                    <label htmlFor="password">비밀번호</label>
+                    <Input 
+                        id="password" 
+                        type="password" 
+                        placeholder="비밀번호를 입력하세요" 
+                        value={user.password}
+                        onChange={handleChange}/>
+                    
+                    {error && (<p className="error-message">{error}</p>)}
+
+                    <div className="button-container">
+                        <Button value="로그인" onClick={handleLogin} />
+                    </div>
                 </div>
-                <div>
-                    <Button value={"로그인"} onClick={handleLogin}/>
+                <div className="extra-links">
+                    <Button value="아이디 찾기" />
+                    <Button value="비밀번호 찾기" />
+                    <Button value="회원가입" onClick={handleSignup}/>
                 </div>
             </div>
-            <Button value={"아이디 찾기"}/><br/>
-            <Button value={"비밀번호 찾기"}/><br/>
-            <Button value={"회원가입"}/>
         </div>
-    )
-}
+    );
+};
 
 export default Login;

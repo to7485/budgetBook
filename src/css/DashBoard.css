@@ -1,0 +1,11 @@
+.dashboard{
+    width: 100vw; /* 화면의 가로 전체 */
+    height: 100vh; /* 화면의 세로 전체 */
+    display: flex; /* 내용 정렬을 위한 flexbox */
+    align-items: center; /* 세로 가운데 정렬 */
+    justify-content: center; /* 가로 가운데 정렬 */
+    background-color: #f0f0f0; /* 배경색 추가 (필요시) */
+    margin: 0; /* 외부 여백 제거 */
+    padding: 0; /* 내부 여백 제거 */
+    box-sizing: border-box; /* 테두리 포함 크기 계산 */
+}

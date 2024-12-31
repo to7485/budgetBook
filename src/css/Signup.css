@@ -4,8 +4,8 @@ body {
     font-family: Arial, sans-serif;
 }
 
-/* 로그인 컨테이너 */
-.login-container {
+/* 회원가입 컨테이너 */
+.signup-container {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -13,8 +13,8 @@ body {
     background-color: #f7f8fc;
 }
 
-/* 로그인 박스 */
-.login-box {
+/* 회원가입 박스 */
+.signup-box {
     width: 100%;
     max-width: 400px;
     padding: 20px;
@@ -29,17 +29,38 @@ h2 {
     color: #333;
 }
 
-/* 로그인 폼 */
-.login-form {
+/* 회원가입 폼 */
+.signup-form {
     margin-bottom: 20px;
     text-align: left;
 }
 
-.login-form label {
+.signup-form label {
     display: block;
     margin-bottom: 5px;
     color: #555;
     font-weight: bold;
+}
+
+.id-form{
+    display: flex;
+}
+
+.id-form input {
+    flex: 3; /* 3의 비율로 공간 차지 */
+    margin-top: 10px;
+    margin-right: 10px;
+    height: 40px; /* 버튼과 동일한 높이 설정 */
+    padding: 0 10px; /* 내부 여백 */
+    box-sizing: border-box; /* 패딩 포함 */
+}
+
+.id-form button {
+    flex: 1; /* 1의 비율로 공간 차지 */
+    margin-top: 10px;
+    height: 40px; /* input과 동일한 높이 설정 */
+    padding: 0;
+    box-sizing: border-box; /* 패딩 포함 */
 }
 
 /* Input 컴포넌트 스타일 */

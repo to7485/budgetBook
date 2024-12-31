@@ -6,13 +6,10 @@ import Calendar from '../screens/Calendar';
 
 function BoardRoutes() {
   return (
-    <>
-      <NavigationBar />
       <Routes>
         <Route path="dash" element={<DashBoard />} />
         <Route path="calendar" element={<Calendar />} />
       </Routes>
-    </>
   );
 }
 
